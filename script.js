@@ -162,8 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const muteBtn = document.getElementById('heroMuteBtn');
     const playBtn = document.getElementById('heroPlayBtn');
     const expandBtn = document.getElementById('heroExpandBtn');
+    const centerPlayBtn = document.getElementById('heroCenterPlayBtn');
     const heroTimer = document.getElementById('heroTimer');
     const heroPlayhead = document.getElementById('heroPlayhead');
+    const heroTimeline = document.getElementById('heroTimeline');
 
     const videoUrl = heroFrame.getAttribute('data-video');
     const title = heroFrame.getAttribute('data-title') || 'Featured Showreel Edit';
@@ -191,6 +193,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const frames = Math.floor((seconds - Math.floor(seconds)) * 24);
       const pad = (n) => String(n).padStart(2, '0');
       return `00:${pad(mins)}:${pad(secs)}:${pad(frames)}`;
+    }
+
+    // Synchronize play state across UI controls
+    function updatePlayState(isPlaying) {
+      if (isPlaying) {
+        heroFrame.classList.add('is-playing');
+        heroFrame.classList.remove('is-paused');
+        if (playBtn) {
+          playBtn.classList.add('is-playing');
+          playBtn.setAttribute('title', 'Pause loop');
+          playBtn.setAttribute('aria-label', 'Pause showreel loop');
+        }
+      } else {
+        heroFrame.classList.remove('is-playing');
+        heroFrame.classList.add('is-paused');
+        if (playBtn) {
+          playBtn.classList.remove('is-playing');
+          playBtn.setAttribute('title', 'Play loop');
+          playBtn.setAttribute('aria-label', 'Play showreel loop');
+        }
+      }
     }
 
     // A. For Google Drive or direct video files (.mp4 / .webm)
@@ -235,11 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       activeVideoEl = video;
 
-      // Ensure autoplay starts
-      video.play().catch(() => {
-        // Autoplay policy handled: video remains ready
-      });
-
       // Synchronize timeline playhead and timecode
       video.addEventListener('timeupdate', () => {
         if (heroTimer) {
@@ -248,23 +266,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroPlayhead && video.duration) {
           const percent = (video.currentTime / video.duration) * 100;
           heroPlayhead.style.left = `${percent}%`;
+          if (heroTimeline) {
+            heroTimeline.setAttribute('aria-valuenow', Math.round(percent));
+          }
         }
       });
 
       // Playback state updates
-      video.addEventListener('play', () => {
-        if (playBtn) {
-          playBtn.classList.add('is-playing');
-          playBtn.setAttribute('title', 'Pause loop');
-        }
-      });
+      video.addEventListener('play', () => updatePlayState(true));
+      video.addEventListener('pause', () => updatePlayState(false));
 
-      video.addEventListener('pause', () => {
-        if (playBtn) {
-          playBtn.classList.remove('is-playing');
-          playBtn.setAttribute('title', 'Play loop');
-        }
-      });
+      // Attempt autoplay with graceful mobile low-power mode handling
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            updatePlayState(true);
+          })
+          .catch(() => {
+            // Mobile browser blocked autoplay: video remains ready with play button prompt
+            updatePlayState(false);
+          });
+      }
 
       video.addEventListener('volumechange', () => {
         if (muteBtn) {
@@ -319,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Wire up hero controls
+    // Wire up hero controls with touch and click handling
     if (muteBtn) {
       muteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -334,10 +357,19 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (activeVideoEl) {
           if (activeVideoEl.paused) {
-            activeVideoEl.play();
+            activeVideoEl.play().catch(() => {});
           } else {
             activeVideoEl.pause();
           }
+        }
+      });
+    }
+
+    if (centerPlayBtn) {
+      centerPlayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (activeVideoEl) {
+          activeVideoEl.play().catch(() => {});
         }
       });
     }
@@ -349,11 +381,74 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Clicking anywhere on the screen-frame (outside buttons) opens the full modal preview
+    // Clicking anywhere on the screen-frame (outside buttons):
+    // If paused, tap to play; if playing, open full modal preview
     heroFrame.addEventListener('click', (e) => {
-      if (e.target.closest('.hero-ctrl-btn')) return;
+      if (e.target.closest('.hero-ctrl-btn') || e.target.closest('.hero-center-play')) return;
+      if (activeVideoEl && activeVideoEl.paused) {
+        activeVideoEl.play().catch(() => {});
+        return;
+      }
       openVideoModal({ videoUrl, title, badge, aspect });
     });
+
+    // Interactive timeline scrubbing (touch & pointer support)
+    if (heroTimeline) {
+      let isScrubbing = false;
+
+      function scrubAt(clientX) {
+        if (!activeVideoEl || !activeVideoEl.duration) return;
+        const rect = heroTimeline.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        const offsetX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+        const ratio = offsetX / rect.width;
+        activeVideoEl.currentTime = ratio * activeVideoEl.duration;
+        if (heroPlayhead) {
+          heroPlayhead.style.left = `${ratio * 100}%`;
+        }
+        if (heroTimer) {
+          heroTimer.textContent = formatTimecode(activeVideoEl.currentTime);
+        }
+        heroTimeline.setAttribute('aria-valuenow', Math.round(ratio * 100));
+      }
+
+      heroTimeline.addEventListener('pointerdown', (e) => {
+        isScrubbing = true;
+        try {
+          heroTimeline.setPointerCapture(e.pointerId);
+        } catch (_) {}
+        scrubAt(e.clientX);
+      });
+
+      heroTimeline.addEventListener('pointermove', (e) => {
+        if (!isScrubbing) return;
+        scrubAt(e.clientX);
+      });
+
+      function stopScrub(e) {
+        if (isScrubbing) {
+          isScrubbing = false;
+          try {
+            heroTimeline.releasePointerCapture(e.pointerId);
+          } catch (_) {}
+        }
+      }
+
+      heroTimeline.addEventListener('pointerup', stopScrub);
+      heroTimeline.addEventListener('pointercancel', stopScrub);
+
+      // Keyboard arrow navigation
+      heroTimeline.addEventListener('keydown', (e) => {
+        if (!activeVideoEl || !activeVideoEl.duration) return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          activeVideoEl.currentTime = Math.max(0, activeVideoEl.currentTime - 1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          activeVideoEl.currentTime = Math.min(activeVideoEl.duration, activeVideoEl.currentTime + 1);
+        }
+      });
+    }
   }
 
   // ===========================================================================

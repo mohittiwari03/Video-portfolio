@@ -293,13 +293,13 @@ nav a:hover,
 .screen-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 200px;
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: #090908;
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .screen-frame:hover {
@@ -398,6 +398,83 @@ nav a:hover,
   font: 8px var(--mono);
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* =============================================================================
+   Hero Center Big Play Button (Mobile & Paused State)
+   ============================================================================= */
+.hero-center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 10px 14px;
+  background: rgba(20, 20, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 107, 61, 0.55);
+  border-radius: 999px;
+  color: var(--paper);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 107, 61, 0.25);
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s, border-color 0.2s;
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-center-play:hover {
+  background: rgba(255, 107, 61, 0.95);
+  color: #17120e;
+  border-color: var(--orange-hover);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.hero-center-play:active {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Show center play button when paused or waiting for mobile user interaction */
+.screen-frame.is-paused .hero-center-play,
+.screen-frame:not(.is-playing) .hero-center-play {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.center-play-disc {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--orange);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(255, 107, 61, 0.4);
+}
+
+.center-play-triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 8px;
+  border-color: transparent transparent transparent #17120e;
+  margin-left: 2px;
+}
+
+.center-play-text {
+  font: 9px var(--mono);
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* =============================================================================
@@ -533,6 +610,10 @@ nav a:hover,
 .timeline {
   padding: 14px 4px 6px;
   position: relative;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .timeline-ruler {
@@ -1463,16 +1544,22 @@ nav a:hover,
 @media (max-width: 950px) {
   .hero {
     grid-template-columns: 1fr;
-    gap: 40px;
-    padding-top: 50px;
-    padding-bottom: 50px;
+    gap: clamp(28px, 5vw, 40px);
+    padding-top: clamp(36px, 6vw, 48px);
+    padding-bottom: clamp(36px, 6vw, 48px);
   }
 
   .hero-art {
     transform: none !important;
     width: 100%;
-    max-width: 600px;
+    max-width: 620px;
     margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .screen-frame {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
   }
 
   .hero-side-note {
@@ -1558,25 +1645,27 @@ nav a:hover,
   }
 
   .hero {
-    padding-top: 36px;
-    padding-bottom: 44px;
+    padding-top: 24px;
+    padding-bottom: 36px;
     min-height: 0;
+    gap: 24px;
   }
 
   .hero h1 {
-    font-size: clamp(34px, 10vw, 52px);
-    margin: 18px 0 16px;
+    font-size: clamp(32px, 9.5vw, 48px);
+    margin: 16px 0 14px;
   }
 
   .hero-text {
     font-size: 13px;
-    line-height: 1.75;
+    line-height: 1.7;
   }
 
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    margin-top: 24px;
   }
 
   .hero-actions .button,
@@ -1587,30 +1676,143 @@ nav a:hover,
   }
 
   .hero-meta {
-    margin-top: 32px;
+    margin-top: 22px;
     font-size: 8px;
-    gap: 14px;
+    gap: 12px;
   }
 
   .hero-art {
-    padding: 10px;
+    padding: 10px 10px 8px;
+    border-radius: 8px;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    max-width: 100%;
   }
 
   .screen-frame {
-    min-height: 190px;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+  }
+
+  .hero-video-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
   }
 
   .hero-video-overlay {
-    padding: 10px;
+    padding: 8px 10px;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.55) 0%,
+      transparent 35%,
+      transparent 65%,
+      rgba(0, 0, 0, 0.72) 100%
+    );
+  }
+
+  .hero-video-status {
+    padding: 4px 8px;
+    gap: 6px;
+    border-radius: 4px;
+  }
+
+  .status-label {
+    font-size: 7.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .live-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .hero-video-controls {
+    gap: 6px;
+    z-index: 10;
   }
 
   .hero-ctrl-btn {
-    padding: 5px 8px;
-    font-size: 10px;
+    min-height: 34px;
+    min-width: 34px;
+    padding: 6px 10px;
+    font-size: 11px;
+    border-radius: 4px;
+    background: rgba(20, 20, 18, 0.9);
+    border-color: rgba(255, 255, 255, 0.22);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .hero-ctrl-btn:active {
+    background: var(--orange);
+    color: #17120e;
+    border-color: var(--orange);
+    transform: scale(0.95);
   }
 
   .ctrl-tip {
-    font-size: 7px;
+    font-size: 7.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-center-play {
+    padding: 8px 14px 8px 10px;
+    gap: 8px;
+  }
+
+  .center-play-disc {
+    width: 24px;
+    height: 24px;
+  }
+
+  .center-play-triangle {
+    border-width: 4px 0 4px 7px;
+    margin-left: 1px;
+  }
+
+  .center-play-text {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .timeline {
+    padding: 10px 2px 4px;
+    cursor: ew-resize;
+  }
+
+  .timeline-ruler {
+    font-size: 7.5px;
+    padding-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .track {
+    height: 18px;
+    margin-bottom: 4px;
+    padding: 1px 5px;
+    gap: 4px;
+    border-radius: 2px;
+  }
+
+  .track b {
+    font-size: 6.5px;
+    letter-spacing: 0.05em;
+  }
+
+  .track i {
+    height: 10px;
+  }
+
+  .playhead {
+    top: 6px;
+  }
+
+  .art-top,
+  .art-bottom {
+    font-size: 8px;
+    padding: 2px 2px 8px;
   }
 
   .project-grid {
@@ -1692,3 +1894,88 @@ nav a:hover,
   .hero h1 {
     font-size: 32px;
   }
+
+  .hero-art {
+    padding: 8px 8px 6px;
+  }
+
+  .hero-video-overlay {
+    padding: 6px 8px;
+  }
+
+  .hero-video-controls {
+    gap: 4px;
+  }
+
+  .hero-ctrl-btn {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .hero-mute-btn .ctrl-tip {
+    font-size: 7px;
+  }
+
+  .art-top,
+  .art-bottom {
+    font-size: 7.5px;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Extra Small Mobile Screens (<= 350px) */
+@media (max-width: 350px) {
+  .hero-mute-btn .ctrl-tip {
+    display: none;
+  }
+
+  .hero-video-status {
+    padding: 3px 6px;
+  }
+
+  .status-label {
+    font-size: 7px;
+  }
+}
+
+/* Mobile Landscape Optimization */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding-top: 18px;
+    padding-bottom: 22px;
+    min-height: 0;
+  }
+
+  .hero-art {
+    max-width: 100%;
+    transform: none !important;
+  }
+
+  .hero h1 {
+    font-size: 26px;
+    margin: 8px 0;
+  }
+
+  .hero-text {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    margin-top: 14px;
+    gap: 10px;
+  }
+
+  .hero-actions .button {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+
+  .hero-meta {
+    margin-top: 12px;
+  }
+}

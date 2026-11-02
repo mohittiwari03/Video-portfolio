@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=4" />
+    <link rel="stylesheet" href="style.css?v=5" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -89,6 +89,20 @@
               </video>
             </div>
 
+            <!-- Center Big Play Button (shown when paused or on mobile tap-to-play) -->
+            <button
+              type="button"
+              class="hero-center-play"
+              id="heroCenterPlayBtn"
+              title="Play showreel"
+              aria-label="Play showreel"
+            >
+              <span class="center-play-disc" aria-hidden="true">
+                <span class="center-play-triangle"></span>
+              </span>
+              <span class="center-play-text">PLAY SHOWREEL</span>
+            </button>
+
             <!-- Sleek Overlay Controls for Hero Video -->
             <div class="hero-video-overlay" id="heroVideoOverlay">
               <div class="hero-video-status">
@@ -129,7 +143,7 @@
               </div>
             </div>
           </div>
-          <div class="timeline" id="heroTimeline">
+          <div class="timeline" id="heroTimeline" role="slider" aria-label="Showreel playback timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
             <div class="timeline-ruler">
               <span>00:00</span><span>00:05</span><span>00:10</span
               ><span>00:15</span><span>00:20</span>
@@ -185,14 +199,14 @@
           <article
             class="project-card project-large"
             data-project="1"
-            data-video="https://drive.google.com/file/d/1-2bfYwxGBQB_EQTqEjLicGCFnbQPSv1v/view?usp=sharing"
+            data-video="https://drive.google.com/file/d/1LfcyjxoFW9TKD6wpr8n2brg1-F_5gXGl/view?usp=drive_link"
             data-title="High-Energy Social Reel"
             data-badge="01 / SOCIAL REEL"
             data-aspect="9:16"
           >
             <div class="project-visual visual-one has-thumbnail">
               <img
-                src="https://lh3.googleusercontent.com/d/1-2bfYwxGBQB_EQTqEjLicGCFnbQPSv1v=w1000"
+                src="https://drive.google.com/file/d/1fibg475ekyINwxGCea2Uhed2RVUFK7DW/view?usp=drive_link"
                 alt="High-Energy Social Reel — Thumbnail"
                 class="project-thumbnail"
                 referrerpolicy="no-referrer"
@@ -221,7 +235,7 @@
           <article
             class="project-card"
             data-project="2"
-            data-video=""
+            data-video="https://drive.google.com/file/d/1KKNiblzrT6OEj4-EEH9SZIGAAQETt68z/view?usp=drive_link"
             data-title="Brand / Lifestyle Edit"
             data-badge="02 / BRAND STORY"
             data-aspect="9:16"
@@ -252,7 +266,7 @@
           <article
             class="project-card"
             data-project="3"
-            data-video=""
+            data-video="https://drive.google.com/file/d/1TeuvjBsIR49teMSZxpdcFDk5OjsIU2d0/view?usp=drive_link"
             data-title="Typography / Motion Edit"
             data-badge="03 / MOTION EDIT"
             data-aspect="9:16"
